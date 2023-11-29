@@ -49,7 +49,14 @@ Compressy is a web application that allows users to compress and resize images e
 
 ## Contributing
 
-Contributions are welcome! If you find a bug or have a feature request, please open an issue.
+We enthusiastically welcome contributions from the community! Here's how you can contribute:
+
+1. **Fork** the repository.
+2. Create a new branch for your changes.
+3. Implement your modifications in the created branch.
+4. Submit a **pull request** with a comprehensive description of your alterations.
+
+Before contributing, kindly review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) for a smooth collaboration.
 
 ## License
 
