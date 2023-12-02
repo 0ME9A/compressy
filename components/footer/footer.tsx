@@ -55,7 +55,7 @@ function Footer() {
         <div className="text-center font-bold text-sm sm:text-lg">
           <p className="py-2">We do not store uploaded data anywhere.</p>
           <p className="text-gray-300">
-            &copy; Copyright 2022 Compressy
+            &copy; Copyright {new Date().getFullYear()} Compressy
             <span className="px-2">|</span>
             <Link
               href="/terms-privacy/"
