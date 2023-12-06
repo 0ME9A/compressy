@@ -28,6 +28,7 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
   const [outputSrc, setOutputSrc] = useState<string | null>(null);
   const [inputImgLoad, setInputImgLoad] = useState<number>(0);
   const [outputImgLoad, setOutputImgLoad] = useState<number>(0);
+  const [outputFileName, setOutputFileName] = useState<string>("");
 
   const dataConverter = (num: number, divide: number): string => {
     if (num / divide > 1024) {
@@ -92,6 +93,14 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
       setError({ error: true, title: "Invalid Image Type", description });
     }
   }, [fileToReducer]);
+
+  useEffect(() => {
+    const periodAt = fileToReducer ? fileToReducer.name.lastIndexOf('.') : 0;
+    const name = fileToReducer ? fileToReducer.name.slice(0, periodAt) : '';
+    const extension = fileToReducer ? fileToReducer.name.slice(periodAt): '';
+    
+    fileToReducer && setOutputFileName(fileToReducer ? `compressy_${name}_${W}x${H}${extension}` : ``);
+  }, [W, H, fileToReducer]);
 
   if (isError.error) {
     return (
@@ -216,7 +225,7 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
         <section className="max-w-screen-lg mx-auto p-0">
           <a
             href={outputSrc || "#"}
-            download={"compressy"}
+            download={outputFileName}
             className="bg-blue-500 rounded-lg py-3 text-xl text-center text-white font-bold p-2 duration-75 !border-transparent block"
           >
             Download
