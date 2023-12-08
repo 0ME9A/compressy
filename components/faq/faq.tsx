@@ -70,10 +70,6 @@ function Faq() {
         Compressy uses cookies for statistical and ad personalization purposes. Refer the <Link href={"/terms-privacy"} className="text-blue-500">Terms & Privacy</Link> to know more. 
         </p>
       </details>
-      <LinkButton href="/" className="w-fit float-right mt-5">
-        <FaArrowLeft />
-        Home
-      </LinkButton>
     </section>
   );
 }
