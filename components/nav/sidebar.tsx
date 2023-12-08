@@ -1,14 +1,13 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import { setTheme } from "@/RTK/slices/themeSlice";
 import { FaGithub, FaMoon } from "react-icons/fa";
 import { Dispatch, SetStateAction } from "react";
 import { IoClose } from "react-icons/io5";
 import { MdSunny } from "react-icons/md";
 import { RootState } from "@/RTK/store";
-import { theme } from "@/utils/theme";
 
+import ThemeButton from "../buttons&links/ThemeButton";
 import LinkButton from "../buttons&links/LinkButton";
 import Button from "../buttons&links/Button";
 import Link from "../buttons&links/Link";
@@ -49,24 +48,19 @@ function Sidebar({ className, setSidebar: setMenu }: sidebarFace) {
         <div className="grow"></div>
         <ul className="space-y-2">
           <li>
-            <Button
-              className=" !p-2 flex w-full items-center justify-center gap-2"
-              onMouseDown={() => console.log("hi")}
-              disabled={!dispatch}
-              onClick={() => dispatch(setTheme(theme()))}
-            >
+            <ThemeButton className=" !p-2 flex w-full items-center justify-center gap-2">
               {dark ? (
-                <>
-                  Dark
-                  <FaMoon className={"group-hover:scale-125"} />
-                </>
-              ) : (
                 <>
                   Light
                   <MdSunny className={"group-hover:scale-125"} />
                 </>
+              ) : (
+                <>
+                  Dark
+                  <FaMoon className={"group-hover:scale-125"} />
+                </>
               )}
-            </Button>
+            </ThemeButton>
           </li>
           <li className="col-span-2">
             <LinkButton
