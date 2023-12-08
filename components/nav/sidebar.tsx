@@ -43,6 +43,9 @@ function Sidebar({ className, setSidebar: setMenu }: sidebarFace) {
             <Link href={"/about"}>About</Link>
           </li>
           <li className="col-span-4">
+            <Link href={"/faq"}>FAQ</Link>
+          </li>
+          <li className="col-span-4">
             <Link href={"/terms-privacy"}>Terms & privacy</Link>
           </li>
         </ul>

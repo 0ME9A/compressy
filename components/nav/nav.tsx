@@ -52,6 +52,9 @@ function Nav() {
               <Link href={"/about"}>About</Link>
             </li>
             <li>
+              <Link href={"/faq"}>FAQ</Link>
+            </li>
+            <li>
               <Link href={"/terms-privacy"}>Terms & privacy</Link>
             </li>
             <li className="w-[2px] h-6 bg-gray-500/20"></li>
