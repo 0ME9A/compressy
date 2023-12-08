@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 import Footer from "@/components/footer/footer";
 import Theme from "@/components/theme/theme";
 import Nav from "@/components/nav/nav";
+import Faq from "@/components/faq/faq";
 
 export const ClientLayout = ({ children }: { children: ReactNode }) => {
   return (
@@ -14,6 +15,7 @@ export const ClientLayout = ({ children }: { children: ReactNode }) => {
       <Theme />
       <Nav />
       <main className="container p-2 mx-auto">{children}</main>
+      <Faq/>
       <Footer />
     </Provider>
   );
