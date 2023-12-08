@@ -1,15 +1,14 @@
 "use client";
-import { useDispatch, useSelector } from "react-redux";
-import { setTheme } from "@/RTK/slices/themeSlice";
 import { FaGithub, FaMoon } from "react-icons/fa";
 import { usePathname } from "next/navigation";
-import { HiMenuAlt3 } from "react-icons/hi";
 import { useEffect, useState } from "react";
+import { HiMenuAlt3 } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
+import { useSelector } from "react-redux";
 import { MdSunny } from "react-icons/md";
 import { RootState } from "@/RTK/store";
-import { theme } from "@/utils/theme";
 
+import ThemeButton from "../buttons&links/ThemeButton";
 import LinkButton from "../buttons&links/LinkButton";
 import Button from "../buttons&links/Button";
 import Link from "../buttons&links/Link";
@@ -21,7 +20,6 @@ function Nav() {
   const { dark } = useSelector((state: RootState) => state.theme);
   const [isSidebar, setSidebar] = useState<boolean>(false);
   const url = usePathname();
-  const dispatch = useDispatch();
 
   useEffect(() => {
     setSidebar(false);
@@ -59,17 +57,13 @@ function Nav() {
             </li>
             <li className="w-[2px] h-6 bg-gray-500/20"></li>
             <li>
-              <Button
-                className="bg-transparent border-none !p-2"
-                disabled={!dispatch}
-                onClick={() => dispatch(setTheme(theme()))}
-              >
-                {dark ? (
+              <ThemeButton className="bg-transparent border-none !p-2 rounded-lg">
+                {!dark ? (
                   <FaMoon className={"group-hover:scale-125"} />
                 ) : (
                   <MdSunny className={"group-hover:scale-125"} />
                 )}
-              </Button>
+              </ThemeButton>
             </li>
             <li>
               <LinkButton
