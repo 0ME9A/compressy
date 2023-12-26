@@ -5,6 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import InvalidImageType from "../error/InvalidImgType";
 import Button from "../buttons&links/Button";
 import Image from "next/image";
+import { FaLock, FaLockOpen } from "react-icons/fa";
 
 interface ReducerProps {
   fileToReducer: File | null;
@@ -29,6 +30,9 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
   const [inputImgLoad, setInputImgLoad] = useState<number>(0);
   const [outputImgLoad, setOutputImgLoad] = useState<number>(0);
   const [outputFileName, setOutputFileName] = useState<string>("");
+  const [aspectRatioLocked, setAspectRatioLocked] = useState<boolean>(false);
+  const [aspectRatioW, setAspectRatioW] = useState<number>(1);
+  const [aspectRatioH, setAspectRatioH] = useState<number>(1);
 
   const dataConverter = (num: number, divide: number): string => {
     if (num / divide > 1024) {
@@ -41,6 +45,22 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
     }
     return "";
   };
+
+  const round = (num: number, r: number = 0): number => {
+    const pow = Math.pow(10, r);
+    return Math.floor(num * pow) / pow;
+  };
+
+  useEffect(() => {
+    if (aspectRatioLocked || !W || !H) return;
+    if (W > H) {
+      setAspectRatioW(W / H);
+      setAspectRatioH(1);
+    } else {
+      setAspectRatioW(1);
+      setAspectRatioH(H / W);
+    }
+  }, [W, H]);
 
   useEffect(() => {
     const canvas = document.createElement("canvas");
@@ -97,10 +117,53 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
   useEffect(() => {
     const periodAt = fileToReducer ? fileToReducer.name.lastIndexOf('.') : 0;
     const name = fileToReducer ? fileToReducer.name.slice(0, periodAt) : '';
-    const extension = fileToReducer ? fileToReducer.name.slice(periodAt): '';
-    
+    const extension = fileToReducer ? fileToReducer.name.slice(periodAt) : '';
+
     fileToReducer && setOutputFileName(fileToReducer ? `compressy_${name}_${W}x${H}${extension}` : ``);
   }, [W, H, fileToReducer]);
+
+  const onWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let newWidth = parseInt(e.target.value, 10);
+    if (aspectRatioLocked) {
+      const newHeight = Math.min(imgSize.height, Math.max(1, Math.round(newWidth * aspectRatioH / aspectRatioW)));
+      newWidth = Math.round(newHeight * aspectRatioW / aspectRatioH);
+      setH(newHeight);
+    }
+    setW(newWidth);
+  }
+
+  const onHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let newHeight = parseInt(e.target.value, 10);
+    if (aspectRatioLocked) {
+      const newWidth = Math.min(imgSize.width, Math.max(1, Math.round(newHeight * aspectRatioW / aspectRatioH)));
+      newHeight = Math.round(newWidth * aspectRatioH / aspectRatioW);
+      setW(newWidth);
+    }
+    setH(newHeight);
+  }
+
+  const resetControls = () => {
+    setAspectRatioLocked(false);
+    setH(Math.round(imgSize.height / 3));
+    setW(Math.round(imgSize.width / 3));
+  }
+
+  const maximizeSize = () => {
+    if (!aspectRatioLocked || !W || !H) {
+      setH(imgSize.height);
+      setW(imgSize.width);
+    } else {
+      let newHeight = imgSize.height;
+      let newWidth = imgSize.width;
+      if (W > H) {
+        newHeight = Math.round(newWidth * aspectRatioH / aspectRatioW);
+      } else if (H > W) {
+        newWidth = Math.round(newHeight * aspectRatioW / aspectRatioH);
+      }
+      setW(newWidth);
+      setH(newHeight);
+    }
+  }
 
   if (isError.error) {
     return (
@@ -127,7 +190,7 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
               max={imgSize.width}
               step="1"
               value={W}
-              onChange={(e) => setW(parseInt(e.target.value, 10))}
+              onChange={onWidthChange}
               className="max-w-sm w-full"
             />
             <span className="pl-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 font-bold">
@@ -148,7 +211,7 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
               max={imgSize.height}
               step="1"
               value={H}
-              onChange={(e) => setH(parseInt(e.target.value, 10))}
+              onChange={onHeightChange}
               className="max-w-sm w-full"
             />
             <span className="pl-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-900 font-bold">
@@ -170,21 +233,24 @@ function ImgCompressor({ fileToReducer, setFileToReducer }: ReducerProps) {
           </Button>
           <Button
             className="!bg-red-500"
-            onClick={() => {
-              setH(imgSize.height);
-              setW(imgSize.width);
-            }}
+            onClick={maximizeSize}
           >
             Max
           </Button>
           <Button
-            onClick={() => {
-              setH(parseInt(`${imgSize.height / 3}`, 10));
-              setW(parseInt(`${imgSize.width / 3}`, 10));
-            }}
+            onClick={resetControls}
           >
             Reset
           </Button>
+          <div className="max-w-[150px] flex no-wrap rounded-lg bg-gray-100 dark:bg-gray-900 font-bold">
+            <label className="cursor-pointer bg-white dark:bg-black rounded-l-lg p-2 px-4 ">
+              <input type="checkbox" className="sr-only" checked={aspectRatioLocked} onChange={() => setAspectRatioLocked(!aspectRatioLocked)} />
+              {aspectRatioLocked ? <FaLock className="h-5 w-5" style={{ marginRight: "2px" }} /> : <FaLockOpen className="h-5 w-5" style={{ marginLeft: "2px" }} />}
+            </label>
+            <span className="my-auto pl-3">{round(aspectRatioW, 2)}</span> 
+            <span className="my-auto px-3">:</span> 
+            <span className="my-auto pr-3">{round(aspectRatioH, 2)}</span> 
+          </div>
         </div>
       </section>
 
