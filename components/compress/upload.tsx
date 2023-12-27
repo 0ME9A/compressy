@@ -24,7 +24,7 @@ const Upload: React.FC<UploadProps> = ({ setFileToReducer }) => {
           type="file"
           name="upload"
           id="upload"
-          accept="jpg, png, jpeg"
+          accept=".jpg, .png, .jpeg"
           onChange={handleFileChange}
           required
           className="border font-bold absolute top-0 left-0 opacity-0"
