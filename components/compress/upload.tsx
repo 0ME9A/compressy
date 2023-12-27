@@ -1,13 +1,13 @@
 import React, { ChangeEvent, Dispatch, SetStateAction } from "react";
 
 interface UploadProps {
-  setFileToReducer: Dispatch<SetStateAction<File | null>>;
+  setFileToReducer: Dispatch<SetStateAction<FileList | null>>;
 }
 
 const Upload: React.FC<UploadProps> = ({ setFileToReducer }) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFileToReducer(e.target.files[0]);
+      setFileToReducer(e.target.files);
     }
   };
 
@@ -27,6 +27,7 @@ const Upload: React.FC<UploadProps> = ({ setFileToReducer }) => {
           accept=".jpg, .png, .jpeg"
           onChange={handleFileChange}
           required
+          multiple
           className="border font-bold absolute top-0 left-0 opacity-0"
         />
       </div>
