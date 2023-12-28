@@ -5,6 +5,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import CompressorCore from "./compressor_core";
 import JSZip from "jszip";
+import { dataConverter } from "@/utils/common";
 
 interface ReducerProps {
   fileToReducer: FileList | null;
@@ -15,7 +16,7 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
   const [images, setImages] = useState<{ file: File; src: string }[]>([]);
   const [selectedFile, selectFile] = useState<string>("");
   const [downloadInProgress, setDownloadInProgress] = useState<boolean>(false);
-  const outputSources = useRef<{inputName: string, outputName: string, src: string}[]>([]);
+  const outputSources = useRef<{ inputName: string, outputName: string, src: string }[]>([]);
 
   const removeFile = (inputName: string) => {
     const inputObjToRevoke = images.find(img => img.file.name === inputName);
@@ -32,8 +33,8 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
   const setOutputSource = (inputName: string, outputName: string, src: string) => {
     const curOutputSrc = outputSources.current.find(item => item.inputName === inputName);
     if (!curOutputSrc) {
-      outputSources.current.push({inputName, outputName, src});
-    }else{
+      outputSources.current.push({ inputName, outputName, src });
+    } else {
       const objToRevoke = curOutputSrc.src;
       outputSources.current = outputSources.current.map(item => {
         if (item.inputName === inputName) {
@@ -104,10 +105,10 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
                   width={160}
                   height={160}
                   quality={30}
-                  className="object-contain rounded-md max-w-[160px] max-h-[160px] w-auto h-auto" />
-                {/* <figcaption className="absolute top-0 left-0 p-1 text-white text-shadow bg-opacity-75 bg-black text-xs rounded-md">
-                    <strong> {dataConverter(img.inputSrc, 1024)}</strong>
-                  </figcaption> */}
+                  className="object-contain rounded max-w-[160px] max-h-[160px] w-auto h-auto" />
+                <figcaption className="absolute top-0 left-0 p-1 text-white text-shadow bg-opacity-75 bg-black text-xs rounded">
+                  <strong> {dataConverter(img.file.size, 1024)}</strong>
+                </figcaption>
               </figure>
             );
           })}

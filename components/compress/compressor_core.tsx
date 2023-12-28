@@ -6,6 +6,7 @@ import InvalidImageType from "../error/InvalidImgType";
 import Button from "../buttons&links/Button";
 import Image from "next/image";
 import { FaLock, FaLockOpen } from "react-icons/fa";
+import { dataConverter } from "@/utils/common";
 
 interface CompressorCoreProps {
   file: File;
@@ -33,18 +34,6 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
   const [aspectRatioLocked, setAspectRatioLocked] = useState<boolean>(false);
   const [aspectRatioW, setAspectRatioW] = useState<number>(1);
   const [aspectRatioH, setAspectRatioH] = useState<number>(1);
-
-  const dataConverter = (num: number, divide: number): string => {
-    if (num / divide > 1024) {
-      const toMb = `${num / divide / 1024}`;
-      return `${parseInt(toMb)}MB`;
-    }
-    if (num / divide < 1024) {
-      const toKb = `${num / divide}`;
-      return `${parseInt(toKb)}KB`;
-    }
-    return "";
-  };
 
   const round = (num: number, r: number = 0): number => {
     const pow = Math.pow(10, r);
