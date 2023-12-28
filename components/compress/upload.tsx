@@ -18,7 +18,7 @@ const Upload: React.FC<UploadProps> = ({ setFileToReducer }) => {
           htmlFor="upload"
           className="w-full h-full rounded-lg font-bold bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900 border-2 border-transparent hover:border-gray-50 dark:hover:border-gray-950 cursor-pointer relative z-10 top-0 left-0 flex justify-center items-center text-2xl"
         >
-          Upload Image
+          Upload Images
         </label>
         <input
           type="file"

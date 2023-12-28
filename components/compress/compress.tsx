@@ -70,6 +70,7 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
   }
 
   useEffect(() => {
+    if(!fileToReducer || !fileToReducer.length) return;
     const _images = Array.from(fileToReducer || []).map((file) => ({
       file,
       src: URL.createObjectURL(file),
