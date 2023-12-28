@@ -94,26 +94,26 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
       }
 
       {(images.length > 1) && (
-        <><section className="sm:flex h-fit w-fit max-w-screen-lg mx-auto overflow-hidden rounded-lg dark:bg-slate-950 bg-slate-50 p-2 space-x-2">
-          {Array.from(images).map((img) => {
-            return (
-              <figure key={img.file.name} className="relative dark:border-slate-50 border-slate-950 border-2 rounded-md my-auto cursor-pointer transition-transform duration-250 ease-in-out hover:scale-105" onClick={() => selectFile(img.file.name)}>
-                <Image
-                  src={img.src || "/loading.png"}
-                  alt="Original image"
-                  id="img-input"
-                  width={160}
-                  height={160}
-                  quality={30}
-                  className="object-contain rounded max-w-[160px] max-h-[160px] w-auto h-auto" />
-                <figcaption className="absolute top-0 left-0 p-1 text-white text-shadow bg-opacity-75 bg-black text-xs rounded">
-                  <strong> {dataConverter(img.file.size, 1024)}</strong>
-                </figcaption>
-              </figure>
-            );
-          })}
-        </section>
-
+        <>
+          <section className="flex flex-wrap justify-around justify-items-center items-center h-fit w-fit max-w-screen-lg mx-auto overflow-auto rounded-lg dark:bg-slate-950 bg-slate-50">
+            {Array.from(images).map((img) => {
+              return (
+                <figure key={img.file.name} className="relative h-fit w-fit m-2 rounded-md border-2 dark:border-slate-50 border-slate-950 cursor-pointer transition-transform duration-250 ease-in-out hover:scale-105" onClick={() => selectFile(img.file.name)}>
+                  <Image
+                    src={img.src || "/loading.png"}
+                    alt="Original image"
+                    id="img-input"
+                    width={160}
+                    height={160}
+                    quality={30}
+                    className="rounded max-w-[160px] max-h-[160px] w-auto h-auto" />
+                  <figcaption className="absolute top-0 left-0 p-1 text-white text-shadow bg-opacity-75 bg-black text-xs rounded">
+                    <strong> {dataConverter(img.file.size, 1024)}</strong>
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </section>
 
           <section className="max-w-screen-lg mx-auto p-0 space-y-4">
             <a

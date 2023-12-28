@@ -203,7 +203,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
             </span>
           </div>
         </div>
-        <div className="btn-group flex gap-4">
+        <div className="btn-group flex flex-wrap justify-center gap-4">
           <Button
             className="!bg-red-500"
             onClick={removeSelf}
