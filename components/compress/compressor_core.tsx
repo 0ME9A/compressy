@@ -228,7 +228,7 @@ function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCor
           </div>
           <a href={fileToReduce.outputSrc || "#"} download={fileToReduce.outputName}>
             <Button className={"!bg-green-500"}>
-              {fileToReduce.outputSrc ? "Save" : <FaEllipsisH className="animate-pulse h-5 w-5" />}
+              {fileToReduce.outputSrc ? "Download" : <FaEllipsisH className="animate-pulse h-5 w-5" />}
             </Button>
           </a>
         </div>
