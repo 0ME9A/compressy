@@ -75,7 +75,7 @@ function CompressorCore({ fileToReduce, removeSelf, setCompressionInProgress, up
         updateOutput(newOutputFileName, url, blob.size);
       }, `image/${newOutputFileName.split('.').pop()}`, 100);
     }
-  }, [W, H, fileToReduce, inputRef, updateOutput]);
+  }, [W, H, fileToReduce, inputRef, setCompressionInProgress, updateOutput]);
 
   useEffect(() => {
     if (!isSupportedFileType(fileToReduce.fileType)) {
