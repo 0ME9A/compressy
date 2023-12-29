@@ -250,33 +250,32 @@ function CompressorCore({ fileToReduce, removeSelf, setCompressionInProgress, up
             <strong> {dataConverter(fileToReduce.inputSize)}</strong>
           </figcaption>
         </figure>
+        
         <figure className="w-full h-full aspect-square relative">
+          {fileToReduce.compressionInProgress
+            ? <div className="absolute inset-0 m-auto h-full w-full bg-black bg-opacity-50">
+                <Image
+                  src="/loading.png"
+                  alt="Compression in progress"
+                  width={160}
+                  height={160}
+                  className="absolute h-1/4 w-1/4 inset-0 m-auto animate-spin"
+                />
+              </div>
+            : <Image
+                src={fileToReduce.outputSrc || "#"}
+                alt="Compressed image"
+                width={500}
+                height={500}
+                quality={100}
+                className="h-full w-full object-cover"
+              />
+          }
+
           <figcaption className="absolute top-0 left-0 p-4 text-white text-shadow bg-opacity-75 bg-black">
             Compressed
             <strong> {dataConverter(fileToReduce.outputSize)}</strong>
           </figcaption>
-
-          {fileToReduce.compressionInProgress
-            ?
-            <div className="absolute inset-0 m-auto h-full w-full bg-black bg-opacity-50">
-              <Image
-                src="/loading.png"
-                alt="Compression in progress"
-                width={160}
-                height={160}
-                className="absolute h-1/4 w-1/4 inset-0 m-auto animate-spin"
-              />
-            </div>
-            :
-            <Image
-              src={fileToReduce.outputSrc || "/loading.png"}
-              alt="Compressed image"
-              width={500}
-              height={500}
-              quality={100}
-              className="h-full w-full object-cover"
-            />
-          }
         </figure>
       </section>
     </div>
