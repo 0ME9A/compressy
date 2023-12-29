@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import InvalidImageType from "../error/InvalidImgType";
 import Button from "../buttons&links/Button";
 import Image from "next/image";
-import { FaLock, FaLockOpen } from "react-icons/fa";
+import { FaEllipsisH, FaLock, FaLockOpen } from "react-icons/fa";
 import { dataConverter } from "@/utils/common";
 
 interface CompressorCoreProps {
@@ -230,6 +230,11 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
             <span className="my-auto px-3">:</span> 
             <span className="my-auto pr-3">{round(aspectRatioH, 2)}</span> 
           </div>
+          <a href={outputImageSrc || "#"} download={outputFileName}>
+            <Button className={"!bg-green-500"}>
+              {outputImageSrc ? "Save" : <FaEllipsisH className="animate-pulse h-5 w-5" />}
+            </Button>
+          </a>
         </div>
       </section>
 
@@ -265,18 +270,6 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
           </figcaption>
         </figure>
       </section>
-
-      {outputImageSrc && (
-        <section className="max-w-screen-lg mx-auto p-0 space-y-4">
-          <a
-            href={outputImageSrc || "#"}
-            download={outputFileName}
-            className="bg-blue-500 rounded-lg py-3 text-xl text-center text-white font-bold p-2 duration-75 !border-transparent block"
-          >
-            Download
-          </a>
-        </section>
-      )}
     </div>
   );
 }
