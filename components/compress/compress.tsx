@@ -12,48 +12,57 @@ interface ReducerProps {
   setFileToReducer: Dispatch<SetStateAction<FileList | null>>;
 }
 
+export interface FileToReduce {
+  fileType: string;
+  inputName: string;
+  inputSrc: string;
+  inputSize: number;
+  outputName: string;
+  outputSrc: string;
+  outputSize: number;
+}
+
 function ImgCompressor({ fileToReducer }: ReducerProps) {
-  const [images, setImages] = useState<{ file: File; src: string }[]>([]);
+  const [files, setFiles] = useState<FileToReduce[]>([]);
   const [selectedFile, selectFile] = useState<string>("");
   const [downloadInProgress, setDownloadInProgress] = useState<boolean>(false);
-  const outputSources = useRef<{ inputName: string, outputName: string, src: string }[]>([]);
 
   const removeFile = (inputName: string) => {
-    const inputObjToRevoke = images.find(img => img.file.name === inputName);
-    const newImages = images.filter(img => img.file.name !== inputName);
-    newImages.length > 0 && selectFile(newImages[0].file.name);
-    setImages(newImages);
-    inputObjToRevoke?.src && URL.revokeObjectURL(inputObjToRevoke?.src);
-
-    const outputObjToRevoke = outputSources.current.find(src => src.inputName === inputName);
-    outputSources.current = outputSources.current.filter(src => src.inputName !== inputName);
-    outputObjToRevoke && URL.revokeObjectURL(outputObjToRevoke?.src);
+    const fileToRemoveIndex = files.findIndex(file => file.inputName === inputName);
+    const fileToRemove = files[fileToRemoveIndex];
+    const remainingFiles = files.filter(img => img.inputName !== inputName);
+    remainingFiles.length > 0 && selectFile(remainingFiles[Math.max(fileToRemoveIndex-1, 0)].inputName);
+    setFiles(remainingFiles);
+    fileToRemove?.inputSrc && URL.revokeObjectURL(fileToRemove.inputSrc);
+    fileToRemove?.outputSrc && URL.revokeObjectURL(fileToRemove.outputSrc);
   }
 
-  const setOutputSource = (inputName: string, outputName: string, src: string) => {
-    const curOutputSrc = outputSources.current.find(item => item.inputName === inputName);
-    if (!curOutputSrc) {
-      outputSources.current.push({ inputName, outputName, src });
-    } else {
-      const objToRevoke = curOutputSrc.src;
-      outputSources.current = outputSources.current.map(item => {
-        if (item.inputName === inputName) {
-          item.outputName = outputName;
-          item.src = src;
-        }
-        return item;
-      });
-      objToRevoke && URL.revokeObjectURL(objToRevoke);
+  const updateOutput = (inputName: string, outputName: string, outputSrc: string, outputSize: number) => {
+    const fileToUpdate = files.find(file => file.inputName === inputName);
+    if (!fileToUpdate) {
+      return
     }
+    const objToRevoke = fileToUpdate.outputSrc;
+    setFiles(prevFiles => 
+      prevFiles.map(file => {
+        if (file.inputName === inputName) {
+          file.outputName = outputName;
+          file.outputSrc = outputSrc;
+          file.outputSize = outputSize;
+        }
+        return file;
+      })
+    );
+    objToRevoke && URL.revokeObjectURL(objToRevoke);
   };
 
   const downloadZip = async () => {
     const zip = new JSZip();
     setDownloadInProgress(true);
     try {
-      for (const img of outputSources.current) {
-        const blob = await (await fetch(img.src)).blob();
-        zip.file(img.outputName, blob);
+      for (const file of files) {
+        const blob = await (await fetch(file.outputSrc)).blob();
+        zip.file(file.outputName, blob);
       }
     } catch (err) {
       setDownloadInProgress(false);
@@ -71,45 +80,59 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
 
   useEffect(() => {
     if(!fileToReducer || !fileToReducer.length) return;
-    const _images = Array.from(fileToReducer || []).map((file) => ({
-      file,
-      src: URL.createObjectURL(file),
-    }));
-    selectFile(_images[0].file.name);
-    setImages(_images);
+    setFiles(prevFiles => {
+      const _files: FileToReduce[] = [];
+      Array.from(fileToReducer || []).forEach((fileToReduce) => {
+        if(prevFiles.findIndex(file => fileToReduce.name == file.inputName) == -1){
+          _files.push({
+            fileType: fileToReduce.type,
+            inputSrc: URL.createObjectURL(fileToReduce),
+            inputName: fileToReduce.name,
+            inputSize: fileToReduce.size,
+            outputName: "",
+            outputSrc: "",
+            outputSize: 0
+          });
+        }
+      });
+      if (!_files.length) return prevFiles;
+      
+      const result = [...prevFiles, ..._files];
+      selectFile(result[result.length - 1].inputName)
+      return result;
+    });
   }, [fileToReducer]);
 
   return (
     <div className="container mx-auto space-y-4">
       {
-        images.map((img) =>
-          <div key={img.file.name} className={selectedFile === img.file.name ? "visible" : "hidden"}>
+        files.map((file) =>
+          <div key={file.inputName} className={selectedFile === file.inputName ? "visible" : "hidden"}>
             <CompressorCore
-              file={img.file}
-              removeSelf={() => removeFile(img.file.name)}
-              inputImageSrc={img.src}
-              setOutputImageSrc={(name, src) => setOutputSource(img.file.name, name, src)}
+              fileToReduce={file}
+              removeSelf={() => removeFile(file.inputName)}
+              updateOutput={(name, src, size) => updateOutput(file.inputName, name, src, size)}
             />
           </div>
         )
       }
 
-      {(images.length > 1) && (
+      {(files.length > 1) && (
         <>
           <section className="flex flex-wrap justify-around justify-items-center items-center h-fit w-fit max-w-screen-lg mx-auto overflow-auto rounded-lg dark:bg-slate-950 bg-slate-50">
-            {Array.from(images).map((img) => {
+            {Array.from(files).map((file) => {
               return (
-                <figure key={img.file.name} className="relative h-fit w-fit m-2 rounded-md border-2 dark:border-slate-50 border-slate-950 cursor-pointer transition-transform duration-250 ease-in-out hover:scale-105" onClick={() => selectFile(img.file.name)}>
+                <figure key={file.inputName} className="relative h-fit w-fit m-2 rounded-md border-2 dark:border-slate-50 border-slate-950 cursor-pointer transition-transform duration-250 ease-in-out hover:scale-105" onClick={() => selectFile(file.inputName)}>
                   <Image
-                    src={img.src || "/loading.png"}
+                    src={file.inputSrc || "/loading.png"}
                     alt="Original image"
                     id="img-input"
                     width={160}
                     height={160}
                     quality={30}
                     className="rounded max-w-[160px] max-h-[160px] w-auto h-auto" />
-                  <figcaption className="absolute top-0 left-0 p-1 text-white text-shadow bg-opacity-75 bg-black text-xs rounded">
-                    <strong> {dataConverter(img.file.size, 1024)}</strong>
+                  <figcaption className="max-w-[100px] absolute bottom-0 inset-x-0 w-fit h-fit mx-auto p-1 text-white text-center bg-opacity-75 bg-black text-xs rounded">
+                    <strong> {`${dataConverter(file.outputSize, 1024)} / ${dataConverter(file.inputSize, 1024)}`}</strong>
                   </figcaption>
                 </figure>
               );
@@ -122,7 +145,7 @@ function ImgCompressor({ fileToReducer }: ReducerProps) {
               className={"bg-blue-500 rounded-lg py-3 text-xl text-center text-white font-bold p-2 duration-75 !border-transparent block "
                 + (downloadInProgress ? " opacity-50 cursor-wait" : " cursor-pointer")}
             >
-              Download Zip
+              {"Download Zip" + ` (${files.length} files)`}
             </a>
           </section>
         </>

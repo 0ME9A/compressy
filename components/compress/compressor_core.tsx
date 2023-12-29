@@ -7,15 +7,15 @@ import Button from "../buttons&links/Button";
 import Image from "next/image";
 import { FaEllipsisH, FaLock, FaLockOpen } from "react-icons/fa";
 import { dataConverter } from "@/utils/common";
+import { FileToReduce } from "./compress";
 
 interface CompressorCoreProps {
-  file: File;
+  fileToReduce: FileToReduce;
   removeSelf: () => void;
-  inputImageSrc: string
-  setOutputImageSrc: (name: string, src: string) => void;
+  updateOutput: (name: string, src: string, size: number) => void;
 }
 
-function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: CompressorCoreProps) {
+function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCoreProps) {
   const [W, setW] = useState<number>(0);
   const [H, setH] = useState<number>(0);
   const [imgSize, setImgSize] = useState<{ width: number; height: number }>({
@@ -28,9 +28,6 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
     description: "",
   });
   const inputRef = useRef<HTMLImageElement>(null);
-  const [outputImageSrc, setOutputImageSrcForSelf] = useState<string>("");
-  const [outputImgLoad, setOutputImgLoad] = useState<number>(0);
-  const [outputFileName, setOutputFileName] = useState<string>("");
   const [aspectRatioLocked, setAspectRatioLocked] = useState<boolean>(false);
   const [aspectRatioW, setAspectRatioW] = useState<number>(1);
   const [aspectRatioH, setAspectRatioH] = useState<number>(1);
@@ -40,10 +37,10 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
     return Math.floor(num * pow) / pow;
   };
 
-  const isSupportedFileType = (file: File | null): boolean => {
-    if (!file) return false;
+  const isSupportedFileType = (fileType: string): boolean => {
+    if (!fileType) return false;
     const supportedFileTypes = ["image/jpeg", "image/jpg", "image/png"];
-    return supportedFileTypes.includes(file.type);
+    return supportedFileTypes.includes(fileType);
   }
 
   useEffect(() => {
@@ -58,31 +55,30 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
   }, [W, H, aspectRatioLocked]);
 
   useEffect(() => {
-    const fileName = file.name;
+    const fileName = fileToReduce.inputName;
     const periodAt = fileName.lastIndexOf('.');
     const name = fileName.slice(0, periodAt);
     const extension = fileName.slice(periodAt);
     const newOutputFileName = `compressy_${name}_${W}x${H}${extension}`;
-    setOutputFileName(newOutputFileName);
-
+    if(newOutputFileName == fileToReduce.outputName) return;
+    
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (ctx && inputRef.current && canvas.width > 0 && canvas.height > 0) {
+      // try to use the inputSrc from filetoReduce instead of the inputRef
       ctx.drawImage(inputRef.current, 0, 0, canvas.width, canvas.height);
       ctx.canvas.toBlob((blob) => {
         if(!blob) return;
         const url = URL.createObjectURL(blob)
-        setOutputImgLoad(blob.size);
-        setOutputImageSrc(newOutputFileName, url);
-        setOutputImageSrcForSelf(url);
+        updateOutput(newOutputFileName, url, blob.size);
       }, `image/${newOutputFileName.split('.').pop()}`, 100);
     }
-  }, [W, H, file.name, inputRef, setOutputImageSrc, setOutputImageSrcForSelf]);
+  }, [W, H, fileToReduce, inputRef, updateOutput]);
 
   useEffect(() => {
-    if(!isSupportedFileType(file)){
+    if(!isSupportedFileType(fileToReduce.fileType)){
       const description = "We only support JPG, JPEG, and PNG files. Please upload a valid image.";
       setError({ error: true, title: "Invalid Image Type", description });
       return;
@@ -90,7 +86,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
 
     if (!inputRef.current) return;
 
-    inputRef.current.src = inputImageSrc;
+    inputRef.current.src = fileToReduce.inputSrc;
 
     inputRef.current.onload = (event: Event) => {
       const target = event.target as HTMLImageElement;
@@ -101,7 +97,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
       setW(Math.round(imgWidth / 3));
     };
     setError((prev) => ({ ...prev, error: false }));
-  }, [inputRef, file, inputImageSrc]);
+  }, [inputRef, fileToReduce]);
 
   const onWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newWidth = parseInt(e.target.value, 10);
@@ -158,7 +154,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
   return (
     <div className="container mx-auto space-y-4">
       <section className="p-4 py-12 max-w-screen-lg w-full mx-auto flex flex-col items-center justify-center gap-8 rounded-lg bg-gray-200 dark:bg-gray-800">
-        <h1 className="text-2xl font-bold">{file.name}</h1>
+        <h1 className="text-2xl font-bold">{fileToReduce.inputName}</h1>
         <div className="w-full space-y-4">
           <div className="flex gap-8 justify-center items-center w-full">
             <label htmlFor="width" className="inline-block font-bold w-16">
@@ -230,9 +226,9 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
             <span className="my-auto px-3">:</span> 
             <span className="my-auto pr-3">{round(aspectRatioH, 2)}</span> 
           </div>
-          <a href={outputImageSrc || "#"} download={outputFileName}>
+          <a href={fileToReduce.outputSrc || "#"} download={fileToReduce.outputName}>
             <Button className={"!bg-green-500"}>
-              {outputImageSrc ? "Save" : <FaEllipsisH className="animate-pulse h-5 w-5" />}
+              {fileToReduce.outputSrc ? "Save" : <FaEllipsisH className="animate-pulse h-5 w-5" />}
             </Button>
           </a>
         </div>
@@ -241,7 +237,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
       <section className="sm:flex h-fit max-w-screen-lg mx-auto overflow-hidden rounded-lg bg-blue-200">
         <figure className="w-full h-full aspect-square relative">
           <Image
-            src={inputImageSrc}
+            src={fileToReduce.inputSrc}
             alt="Original image"
             ref={inputRef}
             width={500}
@@ -251,12 +247,12 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
           />
           <figcaption className="absolute top-0 left-0 p-4 text-white text-shadow bg-opacity-75 bg-black">
             Original
-            <strong> {dataConverter(file.size, 1024)}</strong>
+            <strong> {dataConverter(fileToReduce.inputSize, 1024)}</strong>
           </figcaption>
         </figure>
         <figure className="w-full h-full aspect-square relative">
           <Image
-            src={outputImageSrc || "/loading.png"}
+            src={fileToReduce.outputSrc || "/loading.png"}
             alt="Compressed image"
             id="img-output"
             width={500}
@@ -266,7 +262,7 @@ function CompressorCore({ file, removeSelf, inputImageSrc, setOutputImageSrc}: C
           />
           <figcaption className="absolute top-0 left-0 p-4 text-white text-shadow bg-opacity-75 bg-black">
             Compressed
-            <strong> {dataConverter(outputImgLoad, 1360)}</strong>
+            <strong> {dataConverter(fileToReduce.outputSize, 1024)}</strong>
           </figcaption>
         </figure>
       </section>
