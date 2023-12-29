@@ -6,16 +6,16 @@ import InvalidImageType from "../error/InvalidImgType";
 import Button from "../buttons&links/Button";
 import Image from "next/image";
 import { FaEllipsisH, FaLock, FaLockOpen } from "react-icons/fa";
-import { dataConverter } from "@/utils/common";
-import { FileToReduce } from "./compress";
+import { FileToReduce, dataConverter } from "./compress";
 
 interface CompressorCoreProps {
   fileToReduce: FileToReduce;
   removeSelf: () => void;
+  setCompressionInProgress: (inProgress: boolean) => void;
   updateOutput: (name: string, src: string, size: number) => void;
 }
 
-function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCoreProps) {
+function CompressorCore({ fileToReduce, removeSelf, setCompressionInProgress, updateOutput }: CompressorCoreProps) {
   const [W, setW] = useState<number>(0);
   const [H, setH] = useState<number>(0);
   const [imgSize, setImgSize] = useState<{ width: number; height: number }>({
@@ -60,25 +60,25 @@ function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCor
     const name = fileName.slice(0, periodAt);
     const extension = fileName.slice(periodAt);
     const newOutputFileName = `compressy_${name}_${W}x${H}${extension}`;
-    if(newOutputFileName == fileToReduce.outputName) return;
-    
+    if (newOutputFileName === fileToReduce.outputName) return;
+
+    !fileToReduce.compressionInProgress && setCompressionInProgress(true);
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (ctx && inputRef.current && canvas.width > 0 && canvas.height > 0) {
-      // try to use the inputSrc from filetoReduce instead of the inputRef
       ctx.drawImage(inputRef.current, 0, 0, canvas.width, canvas.height);
       ctx.canvas.toBlob((blob) => {
-        if(!blob) return;
-        const url = URL.createObjectURL(blob)
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
         updateOutput(newOutputFileName, url, blob.size);
       }, `image/${newOutputFileName.split('.').pop()}`, 100);
     }
   }, [W, H, fileToReduce, inputRef, updateOutput]);
 
   useEffect(() => {
-    if(!isSupportedFileType(fileToReduce.fileType)){
+    if (!isSupportedFileType(fileToReduce.fileType)) {
       const description = "We only support JPG, JPEG, and PNG files. Please upload a valid image.";
       setError({ error: true, title: "Invalid Image Type", description });
       return;
@@ -222,9 +222,9 @@ function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCor
               <input type="checkbox" name="Lock Aspect Ratio" className="sr-only" checked={aspectRatioLocked} onChange={() => setAspectRatioLocked(!aspectRatioLocked)} />
               {aspectRatioLocked ? <FaLock className="h-5 w-5" style={{ marginRight: "2px" }} /> : <FaLockOpen className="h-5 w-5" style={{ marginLeft: "2px" }} />}
             </label>
-            <span className="my-auto pl-3">{round(aspectRatioW, 2)}</span> 
-            <span className="my-auto px-3">:</span> 
-            <span className="my-auto pr-3">{round(aspectRatioH, 2)}</span> 
+            <span className="my-auto pl-3">{round(aspectRatioW, 2)}</span>
+            <span className="my-auto px-3">:</span>
+            <span className="my-auto pr-3">{round(aspectRatioH, 2)}</span>
           </div>
           <a href={fileToReduce.outputSrc || "#"} download={fileToReduce.outputName}>
             <Button className={"!bg-green-500"}>
@@ -247,23 +247,36 @@ function CompressorCore({ fileToReduce, removeSelf, updateOutput}: CompressorCor
           />
           <figcaption className="absolute top-0 left-0 p-4 text-white text-shadow bg-opacity-75 bg-black">
             Original
-            <strong> {dataConverter(fileToReduce.inputSize, 1024)}</strong>
+            <strong> {dataConverter(fileToReduce.inputSize)}</strong>
           </figcaption>
         </figure>
         <figure className="w-full h-full aspect-square relative">
-          <Image
-            src={fileToReduce.outputSrc || "/loading.png"}
-            alt="Compressed image"
-            id="img-output"
-            width={500}
-            height={500}
-            quality={100}
-            className="h-full w-full object-cover"
-          />
           <figcaption className="absolute top-0 left-0 p-4 text-white text-shadow bg-opacity-75 bg-black">
             Compressed
-            <strong> {dataConverter(fileToReduce.outputSize, 1024)}</strong>
+            <strong> {dataConverter(fileToReduce.outputSize)}</strong>
           </figcaption>
+
+          {fileToReduce.compressionInProgress
+            ?
+            <div className="absolute inset-0 m-auto h-full w-full bg-black bg-opacity-50">
+              <Image
+                src="/loading.png"
+                alt="Compression in progress"
+                width={160}
+                height={160}
+                className="absolute h-1/4 w-1/4 inset-0 m-auto animate-spin"
+              />
+            </div>
+            :
+            <Image
+              src={fileToReduce.outputSrc || "/loading.png"}
+              alt="Compressed image"
+              width={500}
+              height={500}
+              quality={100}
+              className="h-full w-full object-cover"
+            />
+          }
         </figure>
       </section>
     </div>
